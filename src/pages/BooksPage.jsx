@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { fetchBooks } from "../api.js";
+import { fetchBooks } from "../api";
 
 function BooksPage() {
   const [books, setBooks] = useState([]);
@@ -10,27 +9,35 @@ function BooksPage() {
     const loadBooks = async () => {
       try {
         const data = await fetchBooks();
-        setBooks(data);
+
+        setBooks(Array.isArray(data) ? data : data.books || []);
       } catch (err) {
-        setError(err.message);
+        console.error(err);
+        setError(err.message || "Error loading books");
       }
     };
+
     loadBooks();
   }, []);
 
-  if (error) return <p>{error}</p>;
-  if (!books.length) return <p>Loading books...</p>;
+  if (error) {
+    return <p style={{ color: "red" }}>{error}</p>;
+  }
+
+  if (!books.length) {
+    return <p>Loading books...</p>;
+  }
 
   return (
-    <div className="books-grid">
-      {books.map((book) => (
-        <Link key={book.id} to={`/books/${book.id}`} className="book-card">
-          <img src={book.coverimage} alt={book.title} />
-          <h3>{book.title}</h3>
-          <p>{book.author}</p>
-          <p>{book.available ? "Available" : "Reserved"}</p>
-        </Link>
-      ))}
+    <div>
+      <h2>Book List</h2>
+      <ul>
+        {books.map((book) => (
+          <li key={book.id}>
+            {book.title} – {book.author}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

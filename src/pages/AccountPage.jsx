@@ -1,64 +1,76 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { fetchReservations, returnReservation } from "../api.js";
+import { useNavigate } from "react-router-dom";
+import { fetchAccount, returnReservation } from "../api";
 
-function AccountPage({ token, user }) {
-  const [reservations, setReservations] = useState([]);
+function AccountPage({ token }) {
+  const [account, setAccount] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadReservations = async () => {
-      if (!token) return;
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const loadAccount = async () => {
       try {
-        const data = await fetchReservations(token);
-        setReservations(data);
+        setLoading(true);
+        const data = await fetchAccount(token);
+        setAccount(data);
       } catch (err) {
-        setError(err.message);
+        setError(err.message || "Failed to load account");
+      } finally {
+        setLoading(false);
       }
     };
-    loadReservations();
-  }, [token]);
 
-  if (!token) {
-    return (
-      <div>
-        <p>You need to log in to view your account.</p>
-        <Link to="/login">Log in</Link> or <Link to="/register">register</Link>
-      </div>
-    );
-  }
+    loadAccount();
+  }, [token, navigate]);
 
   const handleReturn = async (reservationId) => {
     try {
       await returnReservation(token, reservationId);
-      setReservations((prev) => prev.filter((res) => res.id !== reservationId));
+      setAccount((prev) => ({
+        ...prev,
+        reservations: prev.reservations.filter(
+          (res) => res.id !== reservationId
+        ),
+      }));
     } catch (err) {
-      setError("Could not return book.");
+      setError(err.message || "Failed to return book");
     }
   };
+
+  if (loading) return <p>Loading account...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (!account) return <p>No account data.</p>;
 
   return (
     <div>
       <h2>Your Account</h2>
-      {user && (
-        <>
-          <p>
-            Name: {user.firstname} {user.lastname}
-          </p>
-          <p>Email: {user.email}</p>
-        </>
-      )}
-      {error && <p>{error}</p>}
+      <p>
+        <strong>Name:</strong> {account.firstname} {account.lastname}
+      </p>
+      <p>
+        <strong>Email:</strong> {account.email}
+      </p>
 
       <h3>Your Reservations</h3>
-      {reservations.length === 0 ? (
+      {(!account.reservations || account.reservations.length === 0) && (
         <p>You have no reserved books.</p>
-      ) : (
+      )}
+
+      {account.reservations && account.reservations.length > 0 && (
         <ul>
-          {reservations.map((res) => (
-            <li key={res.id}>
+          {account.reservations.map((res) => (
+            <li key={res.id} style={{ marginBottom: "1rem" }}>
               <strong>{res.title}</strong> by {res.author}
-              <button onClick={() => handleReturn(res.id)}>Return</button>
+              <br />
+              <button onClick={() => handleReturn(res.id)}>
+                Return this book
+              </button>
             </li>
           ))}
         </ul>

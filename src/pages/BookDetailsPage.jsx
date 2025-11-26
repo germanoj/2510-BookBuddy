@@ -29,7 +29,6 @@ function BookDetailsPage({ token }) {
     try {
       await reserveBook(token, book.id);
       setMessage("Book reserved!");
-      // optimistically mark as unavailable
       setBook({ ...book, available: false });
     } catch (err) {
       setError(err.message);

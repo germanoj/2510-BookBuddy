@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Routes, Route, Link, Navigate } from "react-router-dom";
 import BooksPage from "./pages/BooksPage";
+import BookDetailsPage from "./pages/BookDetailsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AccountPage from "./pages/AccountPage";
@@ -18,7 +19,8 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Navigate to="/books" replace />} />
-        <Route path="/books" element={<BooksPage token={token} />} />
+        <Route path="/books" element={<BooksPage />} />
+        <Route path="/books/:id" element={<BookDetailsPage token={token} />} />
         <Route path="/login" element={<LoginPage setToken={setToken} />} />
         <Route
           path="/register"

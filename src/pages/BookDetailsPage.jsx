@@ -13,9 +13,9 @@ function BookDetailsPage({ token }) {
     const loadBook = async () => {
       try {
         const data = await fetchBookById(id);
-        setBook(data);
+        setBook(data); // already normalized in api.js
       } catch (err) {
-        setError(err.message);
+        setError(err.message || "Error loading book");
       }
     };
     loadBook();
@@ -31,23 +31,33 @@ function BookDetailsPage({ token }) {
       setMessage("Book reserved!");
       setBook({ ...book, available: false });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Error reserving book");
     }
   };
 
-  if (error) return <p>{error}</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!book) return <p>Loading book...</p>;
 
   const disabled = !book.available;
 
   return (
     <div>
-      <img src={book.coverimage} alt={book.title} />
+      {book.coverimage && (
+        <img
+          src={book.coverimage}
+          alt={book.title}
+          style={{ maxWidth: "200px" }}
+        />
+      )}
       <h2>{book.title}</h2>
       <p>
         <strong>Author:</strong> {book.author}
       </p>
       <p>{book.description}</p>
+      <p>
+        <strong>Status:</strong>{" "}
+        {book.available ? "Available" : "Not available"}
+      </p>
       <button onClick={handleReserve} disabled={disabled}>
         {disabled ? "Not Available" : "Reserve"}
       </button>

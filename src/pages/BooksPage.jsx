@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchBooks } from "../api";
 
 function BooksPage() {
@@ -9,7 +10,6 @@ function BooksPage() {
     const loadBooks = async () => {
       try {
         const data = await fetchBooks();
-
         setBooks(Array.isArray(data) ? data : data.books || []);
       } catch (err) {
         console.error(err);
@@ -34,7 +34,10 @@ function BooksPage() {
       <ul>
         {books.map((book) => (
           <li key={book.id}>
-            {book.title} – {book.author}
+            <Link to={`/books/${book.id}`}>
+              {book.title} – {book.author}
+            </Link>{" "}
+            {book.available ? "(Available)" : "(Not available)"}
           </li>
         ))}
       </ul>
